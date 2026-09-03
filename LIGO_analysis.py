@@ -1,18 +1,9 @@
-# To activate .venv environment execute these commands in the terminal:
-#   1. "python -m venv .venv"
-#   2. ".\.venv\Scripts\Activate.ps1"
-#   3. "pip install -r freeze_requirements.txt"
-
-# IF required packages have NOT installed after completing above:
-#   To install the required packages run "python -m pip install numpy matplotlib scipy" after activating the .venv environment
-
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy import fftpack
 from scipy.optimize import curve_fit
 
 t, A, B = np.loadtxt("the_data.dat", usecols = [0, 1, 2], unpack = True)
-#print(t[range(0, 4)])
 
 A_ft = fftpack.fft(A)   # Initial fft
 B_ft = fftpack.fft(B)
@@ -111,44 +102,10 @@ A3, A3_ft = pre_whitening(t, A2, 10)
 
 new_qp(t, A, A_ft, A3, A3_ft)
 
-#A4, A4_ft = signal_filtering(t, A3, A3_ft, 50, 50)
+B1, B1_ft = pre_whitening(t, B, 10)
 
-#A5, A5_ft = clipper(A4, 15, -15)
+B2, B2_ft = signal_filtering(t, B1, B1_ft, 10, 500)
 
-#new_qp(t, A4, A4_ft, A5, A5_ft)
+B3, B3_ft = pre_whitening(t, B2, 10)
 
-#export_data(t, A4)
-
-
-"""
-def pre_whitening(t, y):
-    y = y - np.mean(y)
-    ft = fftpack.fft(y)
-    freqs = fftpack.fftfreq(len(t), d=(t[1]-t[0]))
-
-    #positive = freqs > 0
-    #freq_est = freqs[positive][np.argmax(np.abs(ft[positive]))]
-    freq_est = freqs[np.argmax(np.abs(ft))]    # This version allows both +/- freqs
-    amp_est = np.max(np.abs(ft))/len(y)*2
-
-    matrixA = np.vstack([np.sin(freq_est*2*np.pi*t),np.cos(freq_est*2*np.pi*t),np.ones(len(t))]).T
-    alpha = np.dot(matrixA.T,matrixA)
-    beta = np.dot(matrixA.T,y)
-
-    matrixC = np.linalg.inv(alpha)
-    afit = np.dot(matrixC,beta)
-    phase_est = np.arctan2(afit[1],afit[0])
-
-    def sine_fitting_func(t,f,p,a,offset):
-        return a*np.sin(t*2*np.pi*f+p)+offset
-
-    popt, pcov = curve_fit(sine_fitting_func,t,y,p0=[freq_est,phase_est,amp_est,0.])
-    print("Frequency:", popt[0])
-    print("Phase:", popt[1])
-    print("Amplitude:", popt[2])
-    print("Offset:", popt[3])
-    y = y-sine_fitting_func(t,*popt)
-    return y
-
-# print(np.max(np.abs(A1 - A2)))
-"""
+new_qp(t, B, B_ft, B3, B3_ft)
